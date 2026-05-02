@@ -105,8 +105,8 @@ export class DerivAPI {
   }
 
   private handleMessage(data: any) {
-    if (data.msg_type === "authorize") {
-      // Once authorized, fetch initial data
+    if (data.msg_type === "authorize" && !data.error) {
+      // Once authorized successfully, fetch initial data
       this.fetchProfitTable(0)
       this.subscribeBalance()
     }
