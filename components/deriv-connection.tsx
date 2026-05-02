@@ -5,7 +5,6 @@ import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Loader2, CheckCircle2, XCircle, LogIn, ChevronDown } from 'lucide-react'
-import { getOAuthUrl } from '@/lib/deriv-api'
 import type { DerivAccount } from '@/lib/types'
 
 interface DerivConnectionProps {
@@ -15,6 +14,7 @@ interface DerivConnectionProps {
   onSelectAccount: (account: DerivAccount) => void
   onDisconnect: () => void
   connectionError: string | null
+  onManualConnect: (token: string) => void
 }
 
 export function DerivConnection({ 
@@ -23,12 +23,17 @@ export function DerivConnection({
   activeAccount, 
   onSelectAccount, 
   onDisconnect, 
-  connectionError 
+  connectionError,
+  onManualConnect
 }: DerivConnectionProps) {
   const [showAccountPicker, setShowAccountPicker] = useState(false)
+  const [tokenInput, setTokenInput] = useState('')
 
-  const handleLogin = () => {
-    window.location.href = getOAuthUrl()
+  const handleConnect = () => {
+    if (tokenInput.trim()) {
+      onManualConnect(tokenInput.trim())
+      setTokenInput('')
+    }
   }
 
   const hasAccounts = accounts.length > 0
@@ -59,18 +64,27 @@ export function DerivConnection({
       </div>
 
       {!hasAccounts ? (
-        /* No accounts — show Login with Deriv button */
+        /* No accounts — show manual token input */
         <div className="space-y-4">
-          <Button 
-            onClick={handleLogin} 
-            className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-5 text-sm"
-          >
-            <LogIn className="w-4 h-4 mr-2" />
-            Login with Deriv
-          </Button>
-          <p className="text-xs text-muted-foreground text-center">
-            You&apos;ll be redirected to Deriv to authorize this app. Your credentials are never shared with us.
-          </p>
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Personal API Token</label>
+            <div className="flex gap-2">
+              <input
+                type="password"
+                placeholder="e.g. a1-..."
+                value={tokenInput}
+                onChange={(e) => setTokenInput(e.target.value)}
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              />
+              <Button onClick={handleConnect} disabled={!tokenInput.trim()}>
+                Connect
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Generate a token with <b>Read</b> and <b>Trade</b> scopes in your Deriv Account Settings (Security & Limits).
+            </p>
+          </div>
+
           {connectionError && (
             <div className="p-3 rounded bg-red-500/10 border border-red-500/20 text-red-500 text-sm">
               {connectionError}

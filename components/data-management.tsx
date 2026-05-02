@@ -17,6 +17,7 @@ interface DataManagementProps {
   onSelectDerivAccount: (account: DerivAccount) => void
   onDerivDisconnect: () => void
   derivError: string | null
+  onManualConnect: (token: string) => void
 }
 
 export function DataManagement({ 
@@ -28,7 +29,8 @@ export function DataManagement({
   activeDerivAccount,
   onSelectDerivAccount,
   onDerivDisconnect,
-  derivError
+  derivError,
+  onManualConnect
 }: DataManagementProps) {
   const [importError, setImportError] = useState<string | null>(null)
   const [importSuccess, setImportSuccess] = useState<string | null>(null)
@@ -131,6 +133,7 @@ export function DataManagement({
             onSelectAccount={onSelectDerivAccount}
             onDisconnect={onDerivDisconnect}
             connectionError={derivError}
+            onManualConnect={onManualConnect}
           />
         </div>
 

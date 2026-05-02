@@ -27,41 +27,16 @@ export default function Home() {
       setTrades(JSON.parse(stored))
     }
     
-    // Check for OAuth callback params in URL
-    const params = new URLSearchParams(window.location.search)
-    const oauthAccounts = parseOAuthRedirect(params)
+    // Load stored manual connection
+    const storedAccounts = localStorage.getItem('deriv_accounts')
+    const storedActiveAccount = localStorage.getItem('deriv_active_account')
     
-    if (oauthAccounts.length > 0) {
-      // OAuth redirect — store accounts and connect
-      localStorage.setItem('deriv_accounts', JSON.stringify(oauthAccounts))
-      setDerivAccounts(oauthAccounts)
-      
-      // Auto-select first real account, or fallback to first account
-      const realAccount = oauthAccounts.find(a => a.account.startsWith('CR'))
-      const selectedAccount = realAccount || oauthAccounts[0]
-      setActiveAccount(selectedAccount)
-      localStorage.setItem('deriv_active_account', JSON.stringify(selectedAccount))
-      
-      // Clean the URL (remove OAuth params)
-      window.history.replaceState({}, '', window.location.pathname)
-      
-      // Connect with the selected account's token
-      connectToDeriv(selectedAccount.token)
-
-      // Switch to data view to show connected status
-      setView('data')
-    } else {
-      // No OAuth callback — try to restore from localStorage
-      const storedAccounts = localStorage.getItem('deriv_accounts')
-      const storedActiveAccount = localStorage.getItem('deriv_active_account')
-      
-      if (storedAccounts && storedActiveAccount) {
-        const accounts: DerivAccount[] = JSON.parse(storedAccounts)
-        const active: DerivAccount = JSON.parse(storedActiveAccount)
-        setDerivAccounts(accounts)
-        setActiveAccount(active)
-        connectToDeriv(active.token)
-      }
+    if (storedAccounts && storedActiveAccount) {
+      const accounts: DerivAccount[] = JSON.parse(storedAccounts)
+      const active: DerivAccount = JSON.parse(storedActiveAccount)
+      setDerivAccounts(accounts)
+      setActiveAccount(active)
+      connectToDeriv(active.token)
     }
     
     setIsLoading(false)
@@ -111,6 +86,21 @@ export default function Home() {
 
     api.connect()
     derivApiRef.current = api
+  }
+
+  const handleManualTokenConnect = (token: string) => {
+    // Generate a placeholder account structure for the token
+    const newAccount: DerivAccount = {
+      account: 'API Token',
+      token: token,
+      currency: 'USD'
+    }
+    
+    setDerivAccounts([newAccount])
+    setActiveAccount(newAccount)
+    localStorage.setItem('deriv_accounts', JSON.stringify([newAccount]))
+    localStorage.setItem('deriv_active_account', JSON.stringify(newAccount))
+    connectToDeriv(token)
   }
 
   const selectDerivAccount = (account: DerivAccount) => {
@@ -189,6 +179,7 @@ export default function Home() {
             onSelectDerivAccount={selectDerivAccount}
             onDerivDisconnect={disconnectDeriv}
             derivError={derivError}
+            onManualConnect={handleManualTokenConnect}
           />
         </main>
       )}
