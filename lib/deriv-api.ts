@@ -1,7 +1,7 @@
 import type { Trade, DerivAccount } from "./types"
 import { getSymbolFromShortcode, getInstrumentName } from "./symbol-map"
 
-const APP_ID = `339TwdltLITjyylgd80Vg`
+const APP_ID = 1089
 const WS_URL = `wss://ws.derivws.com/websockets/v3?app_id=${APP_ID}`
 const OAUTH_URL = `https://oauth.deriv.com/oauth2/authorize?app_id=${APP_ID}`
 
